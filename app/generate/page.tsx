@@ -7,106 +7,15 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Upload, Sparkles, X, Plus, ImageIcon, Video, Wand2, Zap } from "lucide-react"
+import { Upload, Sparkles, X, Plus, ImageIcon } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-
-const PRESET_CATEGORIES = [
-  { id: "all", name: "All" },
-  { id: "new", name: "New" },
-  { id: "start_end", name: "Start & End" },
-  { id: "effects", name: "Effects" },
-  { id: "viral", name: "Viral" },
-  { id: "camera", name: "Camera Control" },
-]
-
-const PRESETS = [
-  {
-    id: "raven_transition",
-    name: "RAVEN TRANSITION",
-    category: "start_end",
-    thumbnail: "/dark-cinematic-raven-transformation.jpg",
-    model: "kling",
-  },
-  {
-    id: "pizza_fall",
-    name: "PIZZA FALL",
-    category: "viral",
-    thumbnail: "/pizza-falling-in-stadium.jpg",
-    model: "kling",
-  },
-  {
-    id: "northern_lights",
-    name: "NORTHERN LIGHTS",
-    category: "effects",
-    thumbnail: "/astronaut-northern-lights-space.jpg",
-    model: "kling",
-  },
-  {
-    id: "giant_grab",
-    name: "GIANT GRAB",
-    category: "viral",
-    thumbnail: "/giant-hand-reaching.jpg",
-    model: "kling",
-  },
-  {
-    id: "aquarium",
-    name: "AQUARIUM",
-    category: "camera",
-    thumbnail: "/person-sitting-meditation-room.jpg",
-    model: "kling",
-  },
-  {
-    id: "furies_around",
-    name: "FURIES AROUND",
-    category: "effects",
-    thumbnail: "/woman-orange-jacket-couch.jpg",
-    model: "kling",
-  },
-  {
-    id: "flying_transition",
-    name: "FLYING TRANSITION",
-    category: "start_end",
-    thumbnail: "/orange-sunset-desert-transition.jpg",
-    model: "kling",
-  },
-  {
-    id: "seamless_transition",
-    name: "SEAMLESS TRANSITION",
-    category: "start_end",
-    thumbnail: "/underwater-pool-transition.jpg",
-    model: "kling",
-  },
-  {
-    id: "beast_mode",
-    name: "BEAST MODE",
-    category: "viral",
-    thumbnail: "/athlete-yellow-jersey-running.jpg",
-    model: "kling",
-  },
-]
-
-const MODELS = [
-  { id: "higgsfield", name: "Higgsfield", icon: Sparkles },
-  { id: "sora2", name: "Sora 2", icon: Video },
-  { id: "veo31", name: "Veo 3.1", icon: Video },
-  { id: "kling", name: "Kling", icon: Zap },
-  { id: "wan25", name: "Wan 2.5", icon: Wand2 },
-]
-
-const CAMERA_MOTIONS = [
-  { id: "static", name: "Static" },
-  { id: "dolly_in", name: "Dolly In" },
-  { id: "dolly_out", name: "Dolly Out" },
-  { id: "crane_up", name: "Crane Up" },
-  { id: "crane_down", name: "Crane Down" },
-  { id: "pan_left", name: "Pan Left" },
-  { id: "pan_right", name: "Pan Right" },
-  { id: "fpv_arc", name: "FPV Arc" },
-]
+import { PRESET_CATEGORIES, PRESETS, MODELS } from "./constants"
+import { useGeneration } from "@/hooks/useGeneration"
 
 export default function GeneratePage() {
   const searchParams = useSearchParams()
+  const { data, error, isLoading, generate } = useGeneration()
   const [selectedModel, setSelectedModel] = useState("kling")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
@@ -121,6 +30,21 @@ export default function GeneratePage() {
   const [credits] = useState(150)
 
   const filteredPresets = selectedCategory === "all" ? PRESETS : PRESETS.filter((p) => p.category === selectedCategory)
+
+  const handleGenerate = () => {
+    // This is a placeholder. In a real app, you'd get the correct params
+    // based on the selected model and other form inputs.
+    generate({
+      type: "text2image",
+      params: {
+        prompt,
+        width_and_height: "1696x960",
+        enhance_prompt: true,
+        quality: "720p",
+        batch_size: 1,
+      },
+    })
+  }
 
   return (
     <div className="min-h-screen bg-black">
@@ -228,11 +152,17 @@ export default function GeneratePage() {
           </div>
 
           {/* Generate Button */}
-          <Button className="w-full bg-[#c4ff00] text-black hover:bg-[#b0e600] font-semibold" size="lg">
-            <Sparkles className="w-4 h-4 mr-2" />
-            Generate
+          <Button
+            className="w-full bg-[#c4ff00] text-black hover:bg-[#b0e600] font-semibold"
+            size="lg"
+            onClick={handleGenerate}
+            disabled={isLoading}
+          >
+            {isLoading ? "Generating..." : <><Sparkles className="w-4 h-4 mr-2" /> Generate</>}
             <Badge className="ml-2 bg-black/20 text-black">29</Badge>
           </Button>
+
+          {error && <p className="text-xs text-center text-red-500">Error: {error.message}</p>}
 
           <p className="text-xs text-center text-white/40">Explore more about Sora 2</p>
         </aside>
