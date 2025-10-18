@@ -1,246 +1,288 @@
+"use client"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Check, Sparkles } from "lucide-react"
-import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Check, X, Info } from "lucide-react"
+import { Header } from "@/components/shared/header"
+import { Footer } from "@/components/shared/footer"
+import { cn } from "@/lib/utils"
 
-const LITE_PLANS = [
-  {
-    name: "Free",
-    price: 0,
-    period: "forever",
-    credits: 10,
-    features: ["10 credits", "Chat interface only", "1 concurrent generation", "Community access", "Basic models"],
-  },
-  {
-    name: "Lite",
-    price: 7,
-    period: "month",
-    credits: 150,
-    popular: false,
-    features: [
-      "150 credits/month",
-      "Chat interface only",
-      "2 concurrent generations",
-      "All basic models",
-      "Priority support",
-    ],
-  },
-  {
-    name: "Lite Plus",
-    price: 14,
-    period: "month",
-    credits: 300,
-    features: [
-      "300 credits/month",
-      "Chat interface only",
-      "3 concurrent generations",
-      "All models",
-      "Priority support",
-      "Early access to features",
-    ],
-  },
-]
-
-const PRO_PLANS = [
-  {
-    name: "Pro",
-    price: 29,
-    period: "month",
-    credits: 600,
-    popular: true,
-    features: [
-      "600 credits/month",
-      "Full Pro UI access",
-      "3 concurrent generations",
-      "All models",
-      "Camera controls",
-      "Advanced parameters",
-      "Priority support",
-    ],
-  },
-  {
-    name: "Pro Plus",
-    price: 49,
-    period: "month",
-    credits: 1200,
-    features: [
-      "1200 credits/month",
-      "Full Pro UI access",
-      "4 concurrent generations",
-      "All models",
-      "Camera controls",
-      "API access",
-      "Priority queue",
-      "Dedicated support",
-    ],
-  },
-  {
-    name: "Enterprise",
-    price: 249,
-    period: "month",
-    credits: 6000,
-    features: [
-      "6000 credits/month",
-      "Full Pro UI access",
-      "8 concurrent generations",
-      "All models",
-      "Camera controls",
-      "API access",
-      "Priority queue",
-      "Team features",
-      "Custom integrations",
-      "SLA guarantee",
-    ],
-  },
-]
-
-function PricingCard({ plan, isLite }: { plan: (typeof LITE_PLANS)[0]; isLite: boolean }) {
-  return (
-    <Card className={`p-6 relative ${plan.popular ? "border-accent border-2 shadow-xl" : ""}`}>
-      {plan.popular && (
-        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
-          Most Popular
-        </Badge>
-      )}
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-          <div className="flex items-baseline gap-1">
-            <span className="text-4xl font-bold">${plan.price}</span>
-            <span className="text-muted-foreground">/{plan.period}</span>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">{plan.credits} credits/month</p>
-        </div>
-
-        <Button
-          className={`w-full ${plan.popular ? "bg-accent text-accent-foreground hover:bg-accent/90" : ""}`}
-          variant={plan.popular ? "default" : "outline"}
-        >
-          {plan.price === 0 ? "Get Started" : "Select Plan"}
-        </Button>
-
-        <div className="space-y-3">
-          {plan.features.map((feature, idx) => (
-            <div key={idx} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-              <span className="text-sm">{feature}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </Card>
-  )
+const plans = {
+  monthly: [
+    {
+      name: "Basic",
+      price: 9,
+      originalPrice: null,
+      credits: "150 credits/month",
+      features: [
+        { text: "2 concurrent generations" },
+        { text: "Higgsfield Soul & Character Creation" },
+        { text: "Video Models: Lite, Standard, Turbo, Veo3, Seedance Pro, Kling 2.1, Kling 2.5, Vian 2.2, Vian 2.5" },
+        { text: "Image & video upscaling features" },
+      ],
+      isTopChoice: false,
+      isSpecialOffer: false,
+    },
+    {
+      name: "Pro",
+      price: 29,
+      originalPrice: null,
+      credits: "600 credits/month",
+      features: [
+        { text: "3 concurrent generations" },
+        { text: "Soul, Character Creation" },
+        { text: "Video Models: Lite, Standard, Turbo, Veo3, Hailun 02, Seedance Pro, Kling 2.1, Kling 2.5, Vian 2.2, Vian 2.5, Sora 2, Veo 3.1" },
+        { text: "Image-editing features" },
+        { text: "Start & End Frame control" },
+        { text: "Preview upcoming features" },
+        { text: "Higgsfield Animate, Lipsync Studio" },
+        { text: "Google Veo3", tag: "75% OFF" },
+        { text: "Google Nano Banana", tag: "365 UNLIMITED" },
+        { text: "Seedream 4.0", tag: "365 UNLIMITED" },
+      ],
+      isTopChoice: true,
+      isSpecialOffer: false,
+    },
+    {
+      name: "Ultimate",
+      price: 49,
+      originalPrice: null,
+      credits: "1200 credits/month",
+      features: [
+        { text: "4 concurrent generations" },
+        { text: "Soul, Character Creation" },
+        { text: "Video Models: Lite, Standard, Turbo, Veo3, Hailun 02, Seedance Pro, Kling 2.1, Kling 2.5, Vian 2.2, Vian 2.5, Sora 2, Veo 3.1" },
+        { text: "Image-editing features" },
+        { text: "Start & End Frame control" },
+        { text: "Preview upcoming features" },
+        { text: "Higgsfield Animate, Lipsync Studio" },
+        { text: "Google Veo3", tag: "75% OFF" },
+        { text: "Google Nano Banana", tag: "365 UNLIMITED" },
+        { text: "Seedream 4.0", tag: "365 UNLIMITED" },
+        { text: "Sora 2, Sora 2 Max", tag: "UNLIMITED" },
+      ],
+      isTopChoice: false,
+      isSpecialOffer: false,
+    },
+  ],
+  annually: [
+    {
+      name: "Basic",
+      price: 5.4,
+      originalPrice: 9,
+      credits: "150 credits/month",
+      features: [
+        { text: "2 concurrent generations" },
+        { text: "Higgsfield Soul & Character Creation" },
+        { text: "Video Models: Lite, Standard, Turbo, Veo3, Seedance Pro, Kling 2.1, Kling 2.5, Vian 2.2, Vian 2.5" },
+        { text: "Image & video upscaling features" },
+      ],
+      isTopChoice: false,
+      isSpecialOffer: false,
+    },
+    {
+      name: "Pro",
+      price: 17.4,
+      originalPrice: 29,
+      credits: "600 credits/month",
+      features: [
+        { text: "3 concurrent generations" },
+        { text: "Soul, Character Creation" },
+        { text: "Video Models: Lite, Standard, Turbo, Veo3, Hailun 02, Seedance Pro, Kling 2.1, Kling 2.5, Vian 2.2, Vian 2.5, Sora 2, Veo 3.1" },
+        { text: "Image-editing features" },
+        { text: "Start & End Frame control" },
+        { text: "Preview upcoming features" },
+        { text: "Higgsfield Animate, Lipsync Studio" },
+        { text: "Google Veo3", tag: "75% OFF" },
+        { text: "Google Nano Banana", tag: "365 UNLIMITED" },
+        { text: "Seedream 4.0", tag: "365 UNLIMITED" },
+      ],
+      isTopChoice: true,
+      isSpecialOffer: false,
+    },
+    {
+      name: "Ultimate",
+      price: 29.4,
+      originalPrice: 49,
+      credits: "1200 credits/month",
+      features: [
+        { text: "4 concurrent generations" },
+        { text: "Soul, Character Creation" },
+        { text: "Video Models: Lite, Standard, Turbo, Veo3, Hailun 02, Seedance Pro, Kling 2.1, Kling 2.5, Vian 2.2, Vian 2.5, Sora 2, Veo 3.1" },
+        { text: "Image-editing features" },
+        { text: "Start & End Frame control" },
+        { text: "Preview upcoming features" },
+        { text: "Higgsfield Animate, Lipsync Studio" },
+        { text: "Google Veo3", tag: "75% OFF" },
+        { text: "Google Nano Banana", tag: "365 UNLIMITED" },
+        { text: "Seedream 4.0", tag: "365 UNLIMITED" },
+        { text: "Sora 2, Sora 2 Max", tag: "UNLIMITED" },
+      ],
+      isTopChoice: false,
+      isSpecialOffer: false,
+    },
+  ],
 }
 
+const faqs = [
+  {
+    question: "What Are Credits?",
+    answer:
+      "Credits are the cost unit for media generation. The number of credits required depends on the complexity of the media. Higgsfield Speak video generation costs 20-50 credits, based on duration. Voice and sound generation is 1 credit. Higgsfield Soul Image costs 0.25 credits, GPT Image costs 1-5 credits (Low: 1, Medium: 2, High: 5), Flux Kontextt Max costs 1.5 credits and Higgsfield Canvas costs 0.25 credit. Video cost depends on the selected model, steps, and duration.",
+  },
+  {
+    question: "How do I get more credits?",
+    answer: "You can purchase more credits at any time from your account dashboard.",
+  },
+  {
+    question: "Do unused credits roll over to the next month?",
+    answer: "Unused credits do not roll over. Your credit balance resets at the beginning of each billing cycle.",
+  },
+  {
+    question: "Can I change my plan after purchasing one?",
+    answer: "Yes, you can upgrade or downgrade your plan at any time. The changes will take effect in the next billing cycle.",
+  },
+  {
+    question: "How can I contact Higgsfield?",
+    answer: "You can contact us through our support page or by emailing support@higgsfield.ai.",
+  },
+]
+
 export default function PricingPage() {
+  const [isAnnual, setIsAnnual] = useState(false)
+  const currentPlans = isAnnual ? plans.annually : plans.monthly
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/80">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-xl font-bold">
-              Higgsfield<span className="text-accent">AI</span>
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Lite Mode
-              </Link>
-              <Link href="/generate" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Pro Mode
-              </Link>
-              <Link href="/community" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Community
-              </Link>
-            </nav>
+    <div className="bg-black text-white min-h-screen">
+      <Header />
+      <main>
+        <section className="py-20 text-center">
+          <div className="container mx-auto px-4">
+            <h1 className="text-5xl md:text-7xl font-bold mb-4">Pick your plan</h1>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Get access to more generations and priority access to new features
+            </p>
+            <div className="mt-10 flex items-center justify-center gap-2 bg-[#1C1C1C] p-1 rounded-full w-fit mx-auto">
+              <Button
+                onClick={() => setIsAnnual(false)}
+                className={cn(
+                  "rounded-full px-6",
+                  !isAnnual ? "bg-gray-600 text-white" : "bg-transparent text-gray-400"
+                )}
+              >
+                Monthly
+              </Button>
+              <Button
+                onClick={() => setIsAnnual(true)}
+                className={cn(
+                  "rounded-full px-6 relative",
+                  isAnnual ? "bg-gray-600 text-white" : "bg-transparent text-gray-400"
+                )}
+              >
+                Annual
+                <span className="absolute -top-2 -right-4 bg-primary text-black text-xs font-bold px-2 py-0.5 rounded-full">
+                  SAVE 40%
+                </span>
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm">
-              Log in
-            </Button>
-            <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
-              Get Started
-            </Button>
-          </div>
-        </div>
-      </header>
+        </section>
 
-      {/* Hero */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-sm font-medium">
-            <Sparkles className="w-4 h-4" />
-            Simple, Transparent Pricing
+        <section className="py-12">
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {currentPlans.map((plan) => (
+                <Card
+                  key={plan.name}
+                  className={cn(
+                    "bg-[#1C1C1C] border rounded-2xl p-6 flex flex-col",
+                    {
+                      "border-primary": plan.isTopChoice,
+                      "border-pink-500": plan.isSpecialOffer,
+                      "border-gray-700": !plan.isTopChoice && !plan.isSpecialOffer,
+                    }
+                  )}
+                >
+                  <CardHeader className="p-0 mb-6">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                      {plan.isTopChoice && (
+                        <div className="bg-primary text-black text-xs font-bold px-3 py-1 rounded-full">
+                          TOP CHOICE
+                        </div>
+                      )}
+                      {plan.isSpecialOffer && (
+                        <div className="bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          SPECIAL OFFER
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-4">
+                      {plan.originalPrice && (
+                        <span className="text-3xl font-bold text-gray-500 line-through">
+                          ${plan.originalPrice}
+                        </span>
+                      )}
+                      <span className="text-5xl font-bold">${plan.price}</span>
+                      <span className="text-gray-400">/mo</span>
+                    </div>
+                    <p className="text-sm text-gray-400">Billed {isAnnual ? "annually" : "monthly"}</p>
+                  </CardHeader>
+                  <CardContent className="p-0 flex-grow flex flex-col">
+                    <Button
+                      className={cn("w-full text-lg h-12", {
+                        "bg-primary text-black hover:bg-primary/90": plan.isTopChoice,
+                        "bg-white text-black hover:bg-gray-200": !plan.isTopChoice,
+                      })}
+                    >
+                      Select Plan
+                    </Button>
+                    <div className="space-y-3 mt-8 flex-grow">
+                      <p className="font-semibold flex items-center gap-2">
+                        {plan.credits} <Info className="w-4 h-4 text-gray-400" />
+                      </p>
+                      {plan.features.map((feature, idx) => (
+                        <div key={idx} className="flex items-start gap-3">
+                          <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <span className="flex-1">{feature.text}</span>
+                          {feature.tag && (
+                            <span
+                              className={cn("text-xs font-bold px-2 py-0.5 rounded-full", {
+                                "bg-yellow-300 text-black": feature.tag.includes("UNLIMITED"),
+                                "bg-green-300 text-black": feature.tag.includes("OFF"),
+                              })}
+                            >
+                              {feature.tag}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-balance">
-            Choose your <span className="text-accent">plan</span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-balance">
-            Start free, upgrade when you need more. All plans include access to our AI models.
-          </p>
-        </div>
-      </section>
+        </section>
 
-      {/* Lite Plans */}
-      <section className="pb-16">
-        <div className="container mx-auto px-4">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-2">Lite Plans</h2>
-            <p className="text-muted-foreground">Perfect for beginners. Simple chat interface, no complexity.</p>
+        <section className="py-20">
+          <div className="container mx-auto px-4 max-w-3xl">
+            <h2 className="text-4xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+            <Accordion type="single" collapsible className="w-full">
+              {faqs.map((faq, idx) => (
+                <AccordionItem key={idx} value={`item-${idx}`} className="border-gray-800">
+                  <AccordionTrigger className="text-lg font-semibold">{faq.question}</AccordionTrigger>
+                  <AccordionContent className="text-gray-400">{faq.answer}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {LITE_PLANS.map((plan) => (
-              <PricingCard key={plan.name} plan={plan} isLite={true} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pro Plans */}
-      <section className="py-16 bg-muted/20 border-y border-border/40">
-        <div className="container mx-auto px-4">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-2">Pro Plans</h2>
-            <p className="text-muted-foreground">For professionals. Full control over every parameter.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {PRO_PLANS.map((plan) => (
-              <PricingCard key={plan.name} plan={plan} isLite={false} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">What's the difference between Lite and Pro?</h3>
-              <p className="text-sm text-muted-foreground">
-                Lite plans give you access to our simple chat interface - just describe what you want and AI handles the
-                rest. Pro plans unlock the full UI with camera controls, advanced parameters, and preset customization.
-              </p>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">How do credits work?</h3>
-              <p className="text-sm text-muted-foreground">
-                Each generation costs credits based on the model and settings. Sora costs 29 credits, Nano Banana costs
-                15, and Veo3 costs 50. Credits reset monthly.
-              </p>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Can I switch plans anytime?</h3>
-              <p className="text-sm text-muted-foreground">
-                Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll
-                prorate the difference.
-              </p>
-            </Card>
-          </div>
-        </div>
-      </section>
+        </section>
+      </main>
+      <Footer />
     </div>
   )
 }
