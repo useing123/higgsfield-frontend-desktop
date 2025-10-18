@@ -46,14 +46,6 @@ export function ChatInterface() {
               }}
               className="min-h-[120px] pr-24 resize-none text-base bg-background/50"
             />
-            <div className="absolute bottom-3 right-3 flex items-center gap-2">
-              <Button size="icon" variant="ghost" className="h-8 w-8">
-                <Upload className="w-4 h-4" />
-              </Button>
-              <Button size="icon" variant="ghost" className="h-8 w-8">
-                <Mic className="w-4 h-4" />
-              </Button>
-            </div>
           </div>
 
           <div className="flex items-center justify-between gap-4">
