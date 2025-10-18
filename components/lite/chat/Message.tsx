@@ -1,30 +1,30 @@
-import React from "react"
-import { Message as MessageType } from "./types"
-import GeneratedContent from "./GeneratedContent"
+import React from 'react';
+import { Message as MessageType, JobDetails } from '@/lib/types';
+import JobCard from './JobCard';
+import { cn } from '@/lib/utils';
 
 interface MessageProps {
-  message: MessageType
+  message: MessageType;
 }
 
 const Message: React.FC<MessageProps> = ({ message }) => {
+  const { role, content, job_details } = message;
+
   return (
     <div
-      className={`flex ${
-        message.sender === "user" ? "justify-end" : "justify-start"
-      }`}
+      className={cn(
+        'flex flex-col p-4 my-2 rounded-lg',
+        role === 'user' ? 'bg-zinc-800 text-white self-end' : 'bg-zinc-900 text-white self-start'
+      )}
     >
-      <div
-        className={`p-3 rounded-lg max-w-md ${
-          message.sender === "user"
-            ? "bg-blue-500 text-white"
-            : "bg-gray-800 text-gray-300"
-        }`}
-      >
-        <p>{message.text}</p>
-      </div>
-      {message.content && <GeneratedContent content={message.content} />}
+      <p className="text-sm">{content}</p>
+      {job_details && (
+        <div className="mt-2">
+          <JobCard jobDetails={job_details} />
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default Message
+export default Message;

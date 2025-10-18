@@ -1,8 +1,9 @@
-  export default function LitePage() {
+import ChatInterface from '@/components/lite/ChatInterface';
+
+export default function LitePage() {
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-8">
-      </div>
+    <div className='h-auto'>
+      <ChatInterface />
     </div>
-  )
+  );
 }
