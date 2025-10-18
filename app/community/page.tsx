@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react"
-import { Header } from "@/components/shared/header"
 import { Footer } from "@/components/shared/footer"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
@@ -114,7 +113,6 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
       <main className="flex-grow container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">Community Creations</h1>

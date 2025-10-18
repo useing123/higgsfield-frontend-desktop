@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Check, X, Info } from "lucide-react"
-import { Header } from "@/components/shared/header"
 import { Footer } from "@/components/shared/footer"
 import { cn } from "@/lib/utils"
 
@@ -157,7 +156,6 @@ export default function PricingPage() {
 
   return (
     <div className="bg-black text-white min-h-screen">
-      <Header />
       <main>
         <section className="py-20 text-center">
           <div className="container mx-auto px-4">

@@ -125,43 +125,6 @@ export default function GeneratePage() {
   return (
     <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-50 bg-black/80">
-        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-lg font-bold text-white">
-              Higgsfield
-            </Link>
-            <nav className="hidden md:flex items-center gap-1">
-              <Link
-                href="/"
-                className="px-3 py-1.5 text-sm text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5"
-              >
-                Explore
-              </Link>
-              <Link
-                href="/generate"
-                className="px-3 py-1.5 text-sm text-white hover:text-white transition-colors rounded-lg bg-white/10"
-              >
-                Video
-              </Link>
-              <Link
-                href="/community"
-                className="px-3 py-1.5 text-sm text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5"
-              >
-                Community
-              </Link>
-            </nav>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button size="sm" variant="ghost" className="text-white/60 hover:text-white hover:bg-white/5">
-              Pricing
-            </Button>
-            <Button size="sm" className="bg-[#c4ff00] text-black hover:bg-[#b0e600] font-medium">
-              Upgrade
-            </Button>
-          </div>
-        </div>
-      </header>
 
       <div className="flex h-[calc(100vh-3.5rem)]">
         {/* Left Sidebar */}

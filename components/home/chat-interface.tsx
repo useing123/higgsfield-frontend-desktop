@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
@@ -13,7 +14,7 @@ type Message = {
 
 export function ChatInterface() {
   const [prompt, setPrompt] = useState("")
-  const [messages, setMessages] = useState<Message[]>([])
+  const router = useRouter()
 
   const suggestions = [
     "Create a cinematic sunset video with a crane shot",
@@ -24,39 +25,12 @@ export function ChatInterface() {
 
   const handleSubmit = () => {
     if (!prompt.trim()) return
-
-    setMessages([...messages, { role: "user", content: prompt }])
-    setPrompt("")
-
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "I'll create that for you using our best AI model. Generating your video now...",
-        },
-      ])
-    }, 1000)
+    router.push(`/lite?prompt=${encodeURIComponent(prompt)}`)
   }
 
   return (
     <>
       <Card className="p-6 md:p-8 bg-card/50 backdrop-blur-sm border-border/50 shadow-2xl">
-        {messages.length > 0 && (
-          <div className="mb-6 space-y-4 max-h-64 overflow-y-auto">
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                    msg.role === "user" ? "bg-accent text-accent-foreground" : "bg-muted text-foreground"
-                  }`}
-                >
-                  <p className="text-sm">{msg.content}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         <div className="space-y-4">
           <div className="relative">
