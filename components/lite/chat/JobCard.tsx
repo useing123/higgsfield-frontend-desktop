@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { JobDetails } from '@/lib/types';
-import { apiService } from '@/services/apiService';
 import { Spinner } from '@/components/ui/spinner';
-import { Download, RefreshCw, Video, Image as ImageIcon } from 'lucide-react';
+import { Download, RefreshCw, Video, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useJobPolling } from '@/hooks/useJobPolling';
 
 interface JobCardProps {
   jobDetails: JobDetails;
@@ -13,50 +13,19 @@ interface JobCardProps {
 }
 
 const JobCard: React.FC<JobCardProps> = ({ jobDetails, onRetry }) => {
-  const [job, setJob] = useState<JobDetails & { result_url?: string }>(jobDetails);
-  const [progress, setProgress] = useState(0);
-  const [estimatedTime, setEstimatedTime] = useState(120); // 2 minutes in seconds
-  const [pollCount, setPollCount] = useState(0);
-
-  useEffect(() => {
-    if (job.status === 'completed' || job.status === 'failed') {
-      return;
-    }
-
-    const intervalId = setInterval(async () => {
-      try {
-        const updatedJob = await apiService.getJobStatus(job.job_set_id);
-        if (updatedJob && updatedJob.jobs && updatedJob.jobs.length > 0) {
-          const mainJob = updatedJob.jobs[0];
-          const newStatus = mainJob.status;
-          const newResultUrl = mainJob.results?.raw?.url || mainJob.results?.min?.url;
-
-          setJob((prevJob) => ({
-            ...prevJob,
-            status: newStatus,
-            result_url: newResultUrl,
-          }));
-
-          // Increase progress by 10% each poll
-          setPollCount((prev) => prev + 1);
-          setProgress((prev) => Math.min(prev + 10, 95));
-          setEstimatedTime((prev) => Math.max(prev - 12, 5)); // Decrease time estimate
-        }
-      } catch (error) {
-        console.error('Failed to get job status:', error);
-      }
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [job.status, job.job_set_id]);
-
-  // Update progress to 100% when completed
-  useEffect(() => {
-    if (job.status === 'completed' || job.status === 'succeeded') {
-      setProgress(100);
-      setEstimatedTime(0);
-    }
-  }, [job.status]);
+  const { job, progress, estimatedTime, error, retryCount } = useJobPolling({
+    jobSetId: jobDetails.job_set_id,
+    initialStatus: jobDetails.status,
+    onStatusChange: (status) => {
+      console.log(`Job ${jobDetails.job_set_id} status changed to: ${status}`);
+    },
+    onError: (err) => {
+      console.error('Job polling error:', err);
+    },
+    onComplete: (completedJob) => {
+      console.log('Job completed:', completedJob);
+    },
+  });
 
   const handleDownload = async () => {
     if (!job.result_url) return;
@@ -120,6 +89,16 @@ const JobCard: React.FC<JobCardProps> = ({ jobDetails, onRetry }) => {
           </div>
         </div>
 
+        {/* Error indicator (if polling is having issues) */}
+        {error && retryCount > 0 && (
+          <div className="flex items-center gap-2 text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span>
+              Experiencing network issues (retry {retryCount}/10). Still generating...
+            </span>
+          </div>
+        )}
+
         {/* Skeleton preview */}
         <div className="aspect-video bg-zinc-800 rounded-lg animate-pulse flex items-center justify-center">
           <div className="text-zinc-600">
@@ -131,7 +110,7 @@ const JobCard: React.FC<JobCardProps> = ({ jobDetails, onRetry }) => {
   }
 
   // Failed state
-  if (job.status === 'failed') {
+  if (job.status === 'failed' || (error && retryCount >= 10)) {
     return (
       <div className="p-6 border border-red-900/50 rounded-xl bg-red-950/20 backdrop-blur-sm my-3 space-y-4">
         <div className="flex items-center gap-3">
@@ -139,8 +118,12 @@ const JobCard: React.FC<JobCardProps> = ({ jobDetails, onRetry }) => {
             <RefreshCw className="w-5 h-5 text-red-500" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-red-400">Generation failed</p>
-            <p className="text-xs text-zinc-500">Something went wrong. Please try again.</p>
+            <p className="text-sm font-semibold text-red-400">
+              {job.status === 'failed' ? 'Generation failed' : 'Connection failed'}
+            </p>
+            <p className="text-xs text-zinc-500">
+              {error ? error.message : 'Something went wrong. Please try again.'}
+            </p>
           </div>
         </div>
         {onRetry && (

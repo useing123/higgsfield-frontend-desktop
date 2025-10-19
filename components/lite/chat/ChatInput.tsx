@@ -48,7 +48,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
 
-  // Animated typing effect for placeholder
+  // Animated typing effect for placeholder with proper cleanup
   useEffect(() => {
     if (input.length > 0) {
       setPlaceholder('');
@@ -57,11 +57,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
     const currentPrompt = typingPrompts[currentPromptIndex];
     let currentIndex = 0;
-    let typingInterval: NodeJS.Timeout;
+    let typingInterval: NodeJS.Timeout | null = null;
+    let waitTimeout: NodeJS.Timeout | null = null;
+    let isCancelled = false;
 
     if (isTyping) {
       // Typing phase
       typingInterval = setInterval(() => {
+        if (isCancelled) return;
+
         if (currentIndex <= currentPrompt.length) {
           setPlaceholder(currentPrompt.slice(0, currentIndex));
           currentIndex++;
@@ -71,15 +75,20 @@ const ChatInput: React.FC<ChatInputProps> = ({
       }, 50); // Typing speed
     } else {
       // Wait phase before switching to next prompt
-      const waitTimeout = setTimeout(() => {
+      waitTimeout = setTimeout(() => {
+        if (isCancelled) return;
+
         setCurrentPromptIndex((prev) => (prev + 1) % typingPrompts.length);
         setIsTyping(true);
       }, 15000); // 15 seconds
-
-      return () => clearTimeout(waitTimeout);
     }
 
-    return () => clearInterval(typingInterval);
+    // Cleanup function to prevent memory leaks
+    return () => {
+      isCancelled = true;
+      if (typingInterval) clearInterval(typingInterval);
+      if (waitTimeout) clearTimeout(waitTimeout);
+    };
   }, [currentPromptIndex, isTyping, input]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
