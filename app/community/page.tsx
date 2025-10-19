@@ -1,4 +1,3 @@
-import { Footer } from "@/components/shared/footer"
 import CommunityPageClient from "@/components/community/CommunityPageClient"
 
 export default function CommunityPage() {
@@ -13,7 +12,6 @@ export default function CommunityPage() {
         </div>
         <CommunityPageClient />
       </main>
-      <Footer />
     </div>
   )
 }

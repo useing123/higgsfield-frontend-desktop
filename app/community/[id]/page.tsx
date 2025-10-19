@@ -14,7 +14,13 @@ const communityPost = {
     "Harsh, stark lighting casts an angular shadow across an industrial space lined with white brick walls and exposed wiring, their raw textures contrasting with the smooth concrete floor underfoot. A young woman with long, straight platinum blonde hair kneels facing a large wall entirely covered with sleek black speaker cabinets and interspersed with several old-style TVs mounted on the wall. Her posture is reverent, as if praying to the altar of sound and vision before her.",
 }
 
-export default function CommunityPostPage({ params }: { params: { id: string } }) {
+export default async function CommunityPostPage({
+  params
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
