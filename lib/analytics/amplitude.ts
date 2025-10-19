@@ -1,6 +1,6 @@
 import * as amplitude from '@amplitude/analytics-browser';
 
-const AMPLITUDE_API_KEY = process.env.AMPLITUDE_API_KEY!;
+const AMPLITUDE_API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY!;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 // Initialize Amplitude

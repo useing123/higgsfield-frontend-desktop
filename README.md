@@ -12,7 +12,7 @@ This project is a hackathon redesign of higgsfield.ai, aimed at making AI models
 -   **Lite vs. Pro Modes:** The application is strategically divided into two distinct modes to cater to both new and advanced users, ensuring a tailored experience for each demographic.
 -   **Amplitude Analytics:** We've integrated Amplitude to track user engagement and gather insights, particularly on how non-pro users interact with the platform. This data is vital for our mission to make AI more accessible.
 -   **Community Section:** A central hub for users to connect, share, and learn from one another. This section is crucial for building a network effect and fostering a collaborative environment.
--   **Easter Eggs** We strongly believe that easter eggs more viral in TikTok than any viral clip mechanics. :D
+-   **Easter Eggs** We strongly believe that easter eggs more viral in TikTok than any viral clip mechanics. :Dve 
 ## Mission
 
 Our mission is to increase the deep usage of AI models among non-pro users. We believe that by offering a more accessible "Lite Mode" and a more affordable subscription model, we can empower a wider audience to leverage the full potential of AI.
