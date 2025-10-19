@@ -560,7 +560,7 @@ amplitude.identify({
 ```typescript
 import * as amplitude from '@amplitude/analytics-browser';
 
-const AMPLITUDE_API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY!;
+const AMPLITUDE_API_KEY = process.env.AMPLITUDE_API_KEY!;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 // Initialize Amplitude
@@ -1465,10 +1465,10 @@ if (hasAnalyticsConsent()) {
 
 ```typescript
 // .env.local
-NEXT_PUBLIC_AMPLITUDE_API_KEY=YOUR_DEV_API_KEY
+AMPLITUDE_API_KEY=YOUR_DEV_API_KEY
 
 // .env.production
-NEXT_PUBLIC_AMPLITUDE_API_KEY=YOUR_PROD_API_KEY
+AMPLITUDE_API_KEY=YOUR_PROD_API_KEY
 ```
 
 Use separate Amplitude projects for dev/staging/production.

@@ -23,7 +23,7 @@ This project now includes comprehensive Amplitude analytics tracking for:
 Add your Amplitude API key to `.env.local`:
 
 ```bash
-NEXT_PUBLIC_AMPLITUDE_API_KEY=your_actual_amplitude_api_key_here
+AMPLITUDE_API_KEY=your_actual_amplitude_api_key_here
 ```
 
 **Important:** Replace `YOUR_AMPLITUDE_API_KEY` with your real API key.
@@ -172,7 +172,7 @@ When you add authentication:
 
 ### Events Not Showing Up?
 
-1. **Check API Key:** Make sure `NEXT_PUBLIC_AMPLITUDE_API_KEY` is set
+1. **Check API Key:** Make sure `AMPLITUDE_API_KEY` is set
 2. **Check Console:** Look for "Amplitude initialized" message
 3. **Check Network:** Open DevTools → Network, filter for "amplitude"
 4. **Check Debugger:** Amplitude dashboard → User Lookup → Debugger
