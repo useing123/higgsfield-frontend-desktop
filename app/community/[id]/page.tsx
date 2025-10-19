@@ -1,5 +1,3 @@
-import { Header } from "@/components/shared/header"
-import { Footer } from "@/components/shared/footer"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Heart, MessageCircle, Download, MoreHorizontal } from "lucide-react"
@@ -23,7 +21,6 @@ export default async function CommunityPostPage({
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
       <main className="flex-grow container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 relative aspect-[4/3]">
@@ -82,7 +79,6 @@ export default async function CommunityPostPage({
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   )
 }
