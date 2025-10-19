@@ -19,7 +19,7 @@ export function Header() {
                 Pro Mode
               </Button>
             </Link>
-            <Link href="/generate">
+            <Link href="/lite">
               <Button
                 size="sm"
                 className="font-semibold bg-primary text-primary-foreground hover:bg-black hover:text-white transition-all"
