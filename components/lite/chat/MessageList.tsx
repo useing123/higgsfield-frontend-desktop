@@ -26,6 +26,29 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, streamin
     }
   }, [messages, isLoading]);
 
+  // Check if a message might be waiting for job creation
+  const isWaitingForJob = (msg: MessageType, index: number): boolean => {
+    if (msg.role !== 'assistant') return false;
+    if (msg.job_details) return false; // Already has job details
+
+    // Check if this is the last assistant message and might be a generation response
+    const isLastAssistantMessage = index === messages.length - 1 ||
+      messages.slice(index + 1).every(m => m.role === 'user');
+
+    // Keywords that suggest generation is happening
+    const generationKeywords = [
+      'generat', 'creat', 'mak', 'produc', 'render',
+      'video', 'image', 'picture', 'clip', 'animation'
+    ];
+
+    const contentLower = msg.content.toLowerCase();
+    const hasGenerationKeyword = generationKeywords.some(keyword =>
+      contentLower.includes(keyword)
+    );
+
+    return isLastAssistantMessage && hasGenerationKeyword;
+  };
+
   return (
     <div ref={scrollRef} className="w-full">
       <div className="max-w-3xl mx-auto space-y-2">
@@ -35,7 +58,11 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, streamin
             style={{ animationDelay: `${index * 50}ms` }}
             className="animate-in fade-in slide-in-from-bottom-4 duration-300"
           >
-            <Message message={msg} isStreaming={msg.id === streamingMessageId} />
+            <Message
+              message={msg}
+              isStreaming={msg.id === streamingMessageId}
+              isWaitingForJob={isWaitingForJob(msg, index)}
+            />
           </div>
         ))}
         {isLoading && (

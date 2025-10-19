@@ -1,15 +1,17 @@
 import React from 'react';
 import { Message as MessageType } from '@/lib/types';
 import JobCard from './JobCard';
+import JobCreationLoader from './JobCreationLoader';
 import { cn } from '@/lib/utils';
 import { Bot, User } from 'lucide-react';
 
 interface MessageProps {
   message: MessageType;
   isStreaming?: boolean;
+  isWaitingForJob?: boolean;
 }
 
-const Message: React.FC<MessageProps> = ({ message, isStreaming = false }) => {
+const Message: React.FC<MessageProps> = ({ message, isStreaming = false, isWaitingForJob = false }) => {
   const { role, content, job_details } = message;
 
   return (
@@ -58,6 +60,14 @@ const Message: React.FC<MessageProps> = ({ message, isStreaming = false }) => {
           </p>
         </div>
 
+        {/* Show job creation loader while waiting for job_details */}
+        {isWaitingForJob && !job_details && role === 'assistant' && (
+          <div className="mt-3 w-full">
+            <JobCreationLoader message="Preparing your generation request..." />
+          </div>
+        )}
+
+        {/* Show job card when job_details are available */}
         {job_details && (
           <div className="mt-3 w-full">
             <JobCard jobDetails={job_details} />

@@ -321,6 +321,12 @@ const ChatInterface = () => {
         // Regular mode (non-streaming)
         const responseData = await apiService.sendChatMessage(combinedContent, conversationHistory);
 
+        console.log('API Response:', responseData);
+        console.log('Has job_details:', !!responseData?.job_details);
+        if (responseData?.job_details) {
+          console.log('Job details:', responseData.job_details);
+        }
+
         if (responseData && responseData.message) {
           // 🎉 Easter Egg: 20% chance to add a fun fact to the response
           let finalMessage = responseData.message;
