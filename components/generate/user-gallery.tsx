@@ -3,20 +3,14 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
-const GALLERY_IMAGES = [
-  { id: 1, src: "/abstract-colorful-paint.jpg", alt: "Abstract colorful paint" },
-  { id: 2, src: "/astronaut-northern-lights-space.jpg", alt: "Astronaut northern lights space" },
-  { id: 3, src: "/athlete-yellow-jersey-running.jpg", alt: "Athlete yellow jersey running" },
-  { id: 4, src: "/cinematic-sunset-mountains.jpg", alt: "Cinematic sunset mountains" },
-  { id: 5, src: "/dark-cinematic-raven-transformation.jpg", alt: "Dark cinematic raven transformation" },
-  { id: 6, src: "/fashion-photoshoot-collage.jpg", alt: "Fashion photoshoot collage" },
-  { id: 7, src: "/fashion-photoshoot-grid.jpg", alt: "Fashion photoshoot grid" },
-  { id: 8, src: "/giant-hand-reaching.jpg", alt: "Giant hand reaching" },
-  { id: 9, src: "/orange-sunset-desert-transition.jpg", alt: "Orange sunset desert transition" },
-  { id: 10, src: "/person-sitting-meditation-room.jpg", alt: "Person sitting meditation room" },
-]
+// Mock gallery - will be replaced with real user gallery in future
+const GALLERY_IMAGES: { id: number; src: string; alt: string }[] = []
 
 export function UserGallery() {
+  if (GALLERY_IMAGES.length === 0) {
+    return null // Hide gallery when there are no images
+  }
+
   const displayedImages = GALLERY_IMAGES.slice(0, 8)
 
   return (

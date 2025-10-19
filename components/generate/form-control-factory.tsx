@@ -3,13 +3,16 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
+import { Upload, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useState } from "react"
 
 // This is a simplified schema for demonstration.
 // In a real implementation, this would be more robust and likely derived from the API schema.
 interface FieldSchema {
   name: string
   label: string
-  type: "string" | "number" | "boolean" | "enum" | "textarea"
+  type: "string" | "number" | "boolean" | "enum" | "textarea" | "image"
   options?: string[]
   placeholder?: string
 }
@@ -22,8 +25,86 @@ interface FormControlFactoryProps {
 
 export function FormControlFactory({ fieldSchema, value, onChange }: FormControlFactoryProps) {
   const { name, label, type, options, placeholder } = fieldSchema
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string
+        setImagePreview(dataUrl)
+        onChange(dataUrl)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const clearImage = () => {
+    setImagePreview(null)
+    onChange("")
+  }
 
   switch (type) {
+    case "image":
+      return (
+        <div key={name} className="space-y-2">
+          <Label htmlFor={name}>{label}</Label>
+          <div className="space-y-2">
+            {/* URL Input */}
+            <Input
+              id={name}
+              type="text"
+              value={typeof value === 'string' && !value.startsWith('data:') ? value : ''}
+              onChange={(e) => {
+                onChange(e.target.value)
+                setImagePreview(null)
+              }}
+              placeholder={placeholder || "Enter image URL or upload file"}
+              className="bg-zinc-900 border-white/10 text-white placeholder:text-white/30"
+            />
+            {/* File Upload */}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById(`${name}-file`)?.click()}
+                className="flex-1 bg-zinc-900 border-white/10 text-white hover:bg-zinc-800"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Image
+              </Button>
+              {(imagePreview || value) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={clearImage}
+                  className="bg-zinc-900 border-white/10 text-white hover:bg-zinc-800"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+            <input
+              id={`${name}-file`}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            {/* Image Preview */}
+            {(imagePreview || (typeof value === 'string' && value)) && (
+              <div className="relative aspect-video bg-zinc-900 rounded-lg overflow-hidden border border-white/10">
+                <img
+                  src={imagePreview || value}
+                  alt="Preview"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )
     case "string":
     case "number":
       return (

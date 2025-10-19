@@ -72,6 +72,61 @@ class ApiService {
     }
     return response.json();
   }
+
+  // Text-to-Image generation
+  async generateTextToImage(model: string, params: {
+    prompt: string;
+    aspect_ratio?: string;
+    batch_size?: number;
+    negative_prompt?: string;
+  }) {
+    const response = await fetch(`${API_BASE_URL}/v1/t2i/${model}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+    if (!response.ok) {
+      throw new Error('Text-to-Image generation failed');
+    }
+    return response.json();
+  }
+
+  // Text-to-Video generation
+  async generateTextToVideo(model: string, params: {
+    prompt: string;
+    aspect_ratio?: string;
+    duration?: number;
+    resolution?: string;
+  }) {
+    const response = await fetch(`${API_BASE_URL}/v1/t2v/${model}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+    if (!response.ok) {
+      throw new Error('Text-to-Video generation failed');
+    }
+    return response.json();
+  }
+
+  // Image-to-Video generation
+  async generateImageToVideo(model: string, params: {
+    input_images: Array<{ type: string; image_url: string }>;
+    prompt: string;
+    aspect_ratio?: string;
+    camera_control?: string;
+    duration_sec?: number;
+  }) {
+    const response = await fetch(`${API_BASE_URL}/v1/i2v/${model}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+    if (!response.ok) {
+      throw new Error('Image-to-Video generation failed');
+    }
+    return response.json();
+  }
 }
 
 export const apiService = new ApiService();

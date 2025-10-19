@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Message as MessageType } from '@/lib/types';
 import { apiService } from '@/services/apiService';
@@ -38,7 +38,7 @@ const ChatInterface = () => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
   const [useStreaming] = useState(false); // Toggle to enable/disable streaming
-  const [hasAutoSubmitted, setHasAutoSubmitted] = useState(false);
+  const hasAutoSubmittedRef = useRef(false);
 
   const mockUploadImage = async (file: File): Promise<string> => {
     return new Promise((resolve) => {
@@ -63,15 +63,18 @@ const ChatInterface = () => {
   // Handle URL prompt parameter and auto-submit
   useEffect(() => {
     const promptParam = searchParams.get('prompt');
-    if (promptParam && !hasAutoSubmitted && messages.length === 0) {
+    // Use ref to prevent double-submission in React StrictMode or re-renders
+    if (promptParam && !hasAutoSubmittedRef.current && messages.length === 0) {
+      hasAutoSubmittedRef.current = true;
       setInput(promptParam);
-      setHasAutoSubmitted(true);
       // Auto-submit after a brief delay to ensure state is set
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         sendMessage(promptParam);
       }, 500);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [searchParams]);
+  }, [searchParams, messages.length]);
 
   const sendMessage = async (messageContent?: string) => {
     const content = messageContent || input;

@@ -23,8 +23,6 @@ The application follows a client-server architecture:
     *   **HTTP Client:** HTTPX
     *   **Configuration:** Pydantic
     *   **Logging:** Structlog
-*   **Frontend:**
-    *   Vanilla HTML, CSS, and JavaScript
 *   **Containerization:**
     *   Docker
     *   Docker Compose
@@ -49,13 +47,6 @@ To build and run the application, follow these steps:
         ```bash
         docker-compose up --build -d
         ```
-
-3.  **Running the Frontend:**
-    *   Once the backend is running, start the frontend server:
-        ```bash
-        python3 serve_frontend.py
-        ```
-    *   Access the application in your browser at `http://localhost:3000/frontend.html`.
 
 4.  **Stopping the Application:**
     *   To stop the Docker containers, run:
