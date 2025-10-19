@@ -1,4 +1,5 @@
 
+import { Suspense } from "react"
 import PricingPageClient from "@/components/pricing/PricingPageClient"
 
 const plans = {
@@ -143,5 +144,9 @@ const faqs = [
 ]
 
 export default function PricingPage() {
-  return <PricingPageClient plans={plans} faqs={faqs} />
+  return (
+    <Suspense>
+      <PricingPageClient plans={plans} faqs={faqs} />
+    </Suspense>
+  )
 }
