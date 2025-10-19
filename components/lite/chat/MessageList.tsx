@@ -14,16 +14,20 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, streamin
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
+      // Scroll the parent scrollable container
+      const scrollableParent = scrollRef.current.closest('.overflow-y-auto');
+      if (scrollableParent) {
+        scrollableParent.scrollTo({
+          top: scrollableParent.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
     }
   }, [messages, isLoading]);
 
   return (
-    <div ref={scrollRef} className="flex-1 w-full p-6 overflow-y-auto scroll-smooth">
-      <div className="max-w-3xl mx-auto">
+    <div ref={scrollRef} className="w-full">
+      <div className="max-w-3xl mx-auto space-y-2">
         {messages.map((msg, index) => (
           <div
             key={msg.id}

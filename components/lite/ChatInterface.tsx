@@ -181,65 +181,70 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="h-full bg-black flex flex-col items-center p-4 md:p-8">
-      <div className="w-full max-w-4xl mx-auto flex flex-col items-center flex-1">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full py-12">
-            <div className="text-center space-y-4 mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <h1 className="text-6xl font-bold tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
-                Higgsfield Assist
-              </h1>
-              <p className="text-zinc-400 text-xl max-w-2xl mx-auto">
-                A team of PhDs in your pocket, built for creators.
-              </p>
-            </div>
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-              {featureCards.map((card, index) => (
-                <button
-                  key={card.title}
-                  onClick={() => handleFeatureCardClick(card.message)}
-                  style={{ animationDelay: `${index * 100}ms` }}
-                  className="group relative bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-6 text-left transition-all duration-300 hover:bg-zinc-800/80 hover:border-lime-500/50 hover:scale-105 hover:shadow-xl hover:shadow-lime-500/10 active:scale-100 animate-in fade-in slide-in-from-bottom-8"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="text-3xl group-hover:scale-110 transition-transform duration-300">
-                      {card.icon}
+    <div className="h-full bg-black flex flex-col">
+      {/* Messages area - scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="w-full max-w-4xl mx-auto px-4 md:px-8 py-6">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-full">
+              <div className="text-center space-y-4 mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <h1 className="text-6xl font-bold tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
+                  Higgsfield Assist
+                </h1>
+                <p className="text-zinc-400 text-xl max-w-2xl mx-auto">
+                  A team of PhDs in your pocket, built for creators.
+                </p>
+              </div>
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
+                {featureCards.map((card, index) => (
+                  <button
+                    key={card.title}
+                    onClick={() => handleFeatureCardClick(card.message)}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                    className="group relative bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-6 text-left transition-all duration-300 hover:bg-zinc-800/80 hover:border-lime-500/50 hover:scale-105 hover:shadow-xl hover:shadow-lime-500/10 active:scale-100 animate-in fade-in slide-in-from-bottom-8"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="text-3xl group-hover:scale-110 transition-transform duration-300">
+                        {card.icon}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold text-lg mb-1 group-hover:text-lime-500 transition-colors duration-300">
+                          {card.title}
+                        </h3>
+                        <p className="text-zinc-500 text-sm group-hover:text-zinc-400 transition-colors duration-300">
+                          {card.message}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-white font-semibold text-lg mb-1 group-hover:text-lime-500 transition-colors duration-300">
-                        {card.title}
-                      </h3>
-                      <p className="text-zinc-500 text-sm group-hover:text-zinc-400 transition-colors duration-300">
-                        {card.message}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-lime-500/0 to-lime-500/0 group-hover:from-lime-500/5 group-hover:to-transparent transition-all duration-300" />
-                </button>
-              ))}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-lime-500/0 to-lime-500/0 group-hover:from-lime-500/5 group-hover:to-transparent transition-all duration-300" />
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex-grow w-full">
+          ) : (
             <MessageList
               messages={messages}
               isLoading={isLoading}
               streamingMessageId={streamingMessageId}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
-      <div className="w-full max-w-4xl mx-auto pt-6">
-        <ChatInput
-          input={input}
-          setInput={setInput}
-          sendMessage={() => sendMessage()}
-          isLoading={isLoading}
-          imageUrl={imageUrl}
-          handleImageUpload={handleImageUpload}
-          removeImage={removeImage}
-          hasMessages={messages.length > 0}
-        />
+
+      {/* Fixed input at bottom */}
+      <div className="border-t border-zinc-800 bg-black/80 backdrop-blur-sm">
+        <div className="w-full max-w-4xl mx-auto px-4 md:px-8 py-4">
+          <ChatInput
+            input={input}
+            setInput={setInput}
+            sendMessage={() => sendMessage()}
+            isLoading={isLoading}
+            imageUrl={imageUrl}
+            handleImageUpload={handleImageUpload}
+            removeImage={removeImage}
+            hasMessages={messages.length > 0}
+          />
+        </div>
       </div>
     </div>
   );
