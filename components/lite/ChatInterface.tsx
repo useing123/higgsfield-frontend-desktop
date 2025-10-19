@@ -1,24 +1,44 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Message as MessageType } from '@/lib/types';
 import { apiService } from '@/services/apiService';
 import MessageList from './chat/MessageList';
 import ChatInput from './chat/ChatInput';
-import { Button } from "@/components/ui/button";
 
 const featureCards = [
-    { title: "Generate Video Prompt", message: "Generate a video prompt about..." },
-    { title: "Brainstorm Ideas", message: "Brainstorm some ideas for a new project about..." },
-    { title: "Write a Script", message: "Write a script for a short film about..." },
-    { title: "Create a Character", message: "Create a character profile for a story about..." },
+    {
+      title: "Generate Video Prompt",
+      message: "Generate a video prompt about...",
+      icon: "🎬"
+    },
+    {
+      title: "Brainstorm Ideas",
+      message: "Brainstorm some ideas for a new project about...",
+      icon: "💡"
+    },
+    {
+      title: "Write a Script",
+      message: "Write a script for a short film about...",
+      icon: "✍️"
+    },
+    {
+      title: "Create a Character",
+      message: "Create a character profile for a story about...",
+      icon: "🎭"
+    },
 ];
 
 const ChatInterface = () => {
+  const searchParams = useSearchParams();
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
+  const [useStreaming] = useState(false); // Toggle to enable/disable streaming
+  const [hasAutoSubmitted, setHasAutoSubmitted] = useState(false);
 
   const mockUploadImage = async (file: File): Promise<string> => {
     return new Promise((resolve) => {
@@ -40,12 +60,25 @@ const ChatInterface = () => {
     setImageUrl(null);
   };
 
+  // Handle URL prompt parameter and auto-submit
+  useEffect(() => {
+    const promptParam = searchParams.get('prompt');
+    if (promptParam && !hasAutoSubmitted && messages.length === 0) {
+      setInput(promptParam);
+      setHasAutoSubmitted(true);
+      // Auto-submit after a brief delay to ensure state is set
+      setTimeout(() => {
+        sendMessage(promptParam);
+      }, 500);
+    }
+  }, [searchParams]);
+
   const sendMessage = async (messageContent?: string) => {
     const content = messageContent || input;
     if (!content.trim() && !imageUrl) return;
 
     const conversationHistory = [...messages];
-    
+
     let combinedContent = content;
     if (imageUrl) {
       combinedContent = `Image: ${imageUrl}\n\n${content}`;
@@ -67,16 +100,68 @@ const ChatInterface = () => {
     setIsLoading(true);
 
     try {
-      const responseData = await apiService.sendChatMessage(combinedContent, conversationHistory);
+      if (useStreaming) {
+        // Streaming mode
+        const assistantMessageId = `assistant-${Date.now()}`;
+        setStreamingMessageId(assistantMessageId);
 
-      if (responseData && responseData.message) {
         const assistantMessage: MessageType = {
-          id: responseData.id || Date.now().toString(),
+          id: assistantMessageId,
           role: 'assistant',
-          content: responseData.message,
-          job_details: responseData.job_details,
+          content: '',
         };
+
         setMessages((prevMessages) => [...prevMessages, assistantMessage]);
+        setIsLoading(false);
+
+        let accumulatedContent = '';
+
+        try {
+          for await (const delta of apiService.sendChatMessageStream(combinedContent, conversationHistory)) {
+            accumulatedContent += delta;
+            setMessages((prevMessages) =>
+              prevMessages.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: accumulatedContent }
+                  : msg
+              )
+            );
+          }
+        } catch (streamError) {
+          console.error('Streaming failed, falling back to regular mode:', streamError);
+          // If streaming fails, fall back to regular mode
+          const responseData = await apiService.sendChatMessage(combinedContent, conversationHistory);
+
+          if (responseData && responseData.message) {
+            setMessages((prevMessages) =>
+              prevMessages.map((msg) =>
+                msg.id === assistantMessageId
+                  ? {
+                      ...msg,
+                      content: responseData.message,
+                      job_details: responseData.job_details,
+                    }
+                  : msg
+              )
+            );
+          }
+        } finally {
+          setStreamingMessageId(null);
+        }
+      } else {
+        // Regular mode (non-streaming)
+        const responseData = await apiService.sendChatMessage(combinedContent, conversationHistory);
+
+        if (responseData && responseData.message) {
+          const assistantMessage: MessageType = {
+            id: responseData.id || Date.now().toString(),
+            role: 'assistant',
+            content: responseData.message,
+            job_details: responseData.job_details,
+          };
+          setMessages((prevMessages) => [...prevMessages, assistantMessage]);
+        }
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -86,8 +171,8 @@ const ChatInterface = () => {
         content: 'Failed to connect to the server.',
       };
       setMessages((prev) => [...prev, errorResponse]);
-    } finally {
       setIsLoading(false);
+      setStreamingMessageId(null);
     }
   };
 
@@ -96,30 +181,51 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="h-screen bg-black flex flex-col items-center p-4 md:p-8">
-      <div className="w-full max-w-4xl mx-auto flex flex-col items-center flex-grow">
+    <div className="h-full bg-black flex flex-col items-center p-4 md:p-8">
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center flex-1">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <div className="text-center space-y-3 mb-12">
-              <h1 className="text-5xl font-bold text-white tracking-tight">Higgsfield Assist</h1>
-              <p className="text-gray-400 text-lg">A team of PhDs in your pocket, built for creators.</p>
+          <div className="flex flex-col items-center justify-center h-full py-12">
+            <div className="text-center space-y-4 mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <h1 className="text-6xl font-bold tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
+                Higgsfield Assist
+              </h1>
+              <p className="text-zinc-400 text-xl max-w-2xl mx-auto">
+                A team of PhDs in your pocket, built for creators.
+              </p>
             </div>
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-              {featureCards.map((card) => (
-                <Button
+            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
+              {featureCards.map((card, index) => (
+                <button
                   key={card.title}
-                  variant="outline"
-                  className="bg-zinc-900 border-zinc-800 text-white h-auto p-4 text-left justify-start"
                   onClick={() => handleFeatureCardClick(card.message)}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                  className="group relative bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-6 text-left transition-all duration-300 hover:bg-zinc-800/80 hover:border-lime-500/50 hover:scale-105 hover:shadow-xl hover:shadow-lime-500/10 active:scale-100 animate-in fade-in slide-in-from-bottom-8"
                 >
-                  {card.title}
-                </Button>
+                  <div className="flex items-start gap-4">
+                    <div className="text-3xl group-hover:scale-110 transition-transform duration-300">
+                      {card.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold text-lg mb-1 group-hover:text-lime-500 transition-colors duration-300">
+                        {card.title}
+                      </h3>
+                      <p className="text-zinc-500 text-sm group-hover:text-zinc-400 transition-colors duration-300">
+                        {card.message}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-lime-500/0 to-lime-500/0 group-hover:from-lime-500/5 group-hover:to-transparent transition-all duration-300" />
+                </button>
               ))}
             </div>
           </div>
         ) : (
           <div className="flex-grow w-full">
-            <MessageList messages={messages} isLoading={isLoading} />
+            <MessageList
+              messages={messages}
+              isLoading={isLoading}
+              streamingMessageId={streamingMessageId}
+            />
           </div>
         )}
       </div>
@@ -132,6 +238,7 @@ const ChatInterface = () => {
           imageUrl={imageUrl}
           handleImageUpload={handleImageUpload}
           removeImage={removeImage}
+          hasMessages={messages.length > 0}
         />
       </div>
     </div>

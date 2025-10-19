@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -12,9 +12,23 @@ type Message = {
   content: string
 }
 
+const typingPrompts = [
+  "A cinematic drone shot flying over a misty mountain at sunrise",
+  "Create a viral product showcase video with dynamic camera movements",
+  "Generate a dreamy slow-motion scene with particles floating",
+  "Make a professional talking head video with perfect lighting",
+  "An epic fantasy castle with dragons flying in the background",
+  "Create a neon-lit cyberpunk city street at night with rain",
+  "Generate a peaceful meditation scene in a Japanese zen garden",
+  "A time-lapse of a blooming flower in 4K quality",
+];
+
 export function ChatInterface() {
   const [prompt, setPrompt] = useState("")
   const router = useRouter()
+  const [placeholder, setPlaceholder] = useState('')
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
+  const [isTyping, setIsTyping] = useState(true)
 
   const suggestions = [
     "Create a cinematic sunset video with a crane shot",
@@ -22,6 +36,40 @@ export function ChatInterface() {
     "Generate a dreamy slow-motion scene",
     "Create an energetic dance video",
   ]
+
+  // Animated typing effect for placeholder
+  useEffect(() => {
+    if (prompt.length > 0) {
+      setPlaceholder('');
+      return;
+    }
+
+    const currentPrompt = typingPrompts[currentPromptIndex];
+    let currentIndex = 0;
+    let typingInterval: NodeJS.Timeout;
+
+    if (isTyping) {
+      // Typing phase
+      typingInterval = setInterval(() => {
+        if (currentIndex <= currentPrompt.length) {
+          setPlaceholder(currentPrompt.slice(0, currentIndex));
+          currentIndex++;
+        } else {
+          setIsTyping(false);
+        }
+      }, 50); // Typing speed
+    } else {
+      // Wait phase before switching to next prompt
+      const waitTimeout = setTimeout(() => {
+        setCurrentPromptIndex((prev) => (prev + 1) % typingPrompts.length);
+        setIsTyping(true);
+      }, 15000); // 15 seconds
+
+      return () => clearTimeout(waitTimeout);
+    }
+
+    return () => clearInterval(typingInterval);
+  }, [currentPromptIndex, isTyping, prompt]);
 
   const handleSubmit = () => {
     if (!prompt.trim()) return
@@ -35,7 +83,7 @@ export function ChatInterface() {
         <div className="space-y-4">
           <div className="relative">
             <Textarea
-              placeholder="Describe what you want to create..."
+              placeholder={placeholder || "Describe what you want to create..."}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               onKeyDown={(e) => {

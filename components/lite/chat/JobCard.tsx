@@ -43,27 +43,38 @@ const JobCard: React.FC<JobCardProps> = ({ jobDetails }) => {
     if (job.status === 'completed' && job.result_url) {
       const url = job.result_url;
       if (url.endsWith('.mp4')) {
-        return <video src={url} controls className="mt-2 rounded-lg" />;
+        return (
+          <video
+            src={url}
+            controls
+            className="mt-3 rounded-lg w-full border border-zinc-700 hover:border-lime-500/50 transition-colors duration-200"
+          />
+        );
       }
-      return <img src={url} alt="Generated Content" className="mt-2 rounded-lg" />;
+      return (
+        <img
+          src={url}
+          alt="Generated Content"
+          className="mt-3 rounded-lg w-full border border-zinc-700 hover:border-lime-500/50 transition-colors duration-200"
+        />
+      );
     }
     return null;
   };
 
   return (
-    <div className="p-4 border border-zinc-700 rounded-lg bg-zinc-800 my-2">
-      <div className="flex items-center space-x-2">
-        {(job.status === 'queued' || job.status === 'processing') && (
+    <div className="p-4 border border-zinc-700 rounded-xl bg-zinc-900/50 backdrop-blur-sm my-2 hover:border-lime-500/30 transition-all duration-200">
+      <div className="flex items-center space-x-3">
+        {(job.status === 'pending' || job.status === 'running') && (
           <>
             <Spinner />
-            <p className="text-sm font-medium">Generating your media...</p>
+            <p className="text-sm font-medium text-zinc-300">Generating your media...</p>
           </>
         )}
       </div>
       {renderMedia()}
-      {renderMedia()}
       {job.status === 'failed' && (
-        <p className="text-red-500 mt-2">Generation failed. Please try again.</p>
+        <p className="text-red-500 mt-2 text-sm">Generation failed. Please try again.</p>
       )}
     </div>
   );
