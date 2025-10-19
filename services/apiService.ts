@@ -1,34 +1,61 @@
 // services/apiService.ts
 import { Message } from '@/lib/types';
+import { trackAPIError } from '@/lib/analytics/events';
 
 const API_BASE_URL = 'https://higgsfield-ai-chat-x2va5d5h7a-uc.a.run.app';
 
 class ApiService {
   async sendChatMessage(message: string, conversation_history: Message[]) {
-    const response = await fetch(`${API_BASE_URL}/v1/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, conversation_history }),
-    });
-    if (!response.ok) {
-      throw new Error('API request failed');
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, conversation_history }),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        trackAPIError({
+          endpoint: '/v1/chat',
+          errorMessage: errorText || 'API request failed',
+          errorCode: response.status,
+          requestMethod: 'POST',
+        });
+        throw new Error('API request failed');
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof Error && !error.message.includes('API request failed')) {
+        trackAPIError({
+          endpoint: '/v1/chat',
+          errorMessage: error.message,
+          requestMethod: 'POST',
+        });
+      }
+      throw error;
     }
-    return response.json();
   }
 
   async *sendChatMessageStream(
     message: string,
     conversation_history: Message[]
   ): AsyncGenerator<string, void, unknown> {
-    const response = await fetch(`${API_BASE_URL}/v1/chat/stream`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, conversation_history }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/chat/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, conversation_history }),
+      });
 
-    if (!response.ok) {
-      throw new Error('API request failed');
-    }
+      if (!response.ok) {
+        const errorText = await response.text();
+        trackAPIError({
+          endpoint: '/v1/chat/stream',
+          errorMessage: errorText || 'API request failed',
+          errorCode: response.status,
+          requestMethod: 'POST',
+        });
+        throw new Error('API request failed');
+      }
 
     const reader = response.body?.getReader();
     if (!reader) {
@@ -63,14 +90,42 @@ class ApiService {
     } finally {
       reader.releaseLock();
     }
+    } catch (error) {
+      if (error instanceof Error && !error.message.includes('API request failed')) {
+        trackAPIError({
+          endpoint: '/v1/chat/stream',
+          errorMessage: error.message,
+          requestMethod: 'POST',
+        });
+      }
+      throw error;
+    }
   }
 
   async getJobStatus(jobSetId: string) {
-    const response = await fetch(`${API_BASE_URL}/v1/jobs/${jobSetId}`);
-    if (!response.ok) {
-      throw new Error('API request failed');
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/jobs/${jobSetId}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        trackAPIError({
+          endpoint: `/v1/jobs/${jobSetId}`,
+          errorMessage: errorText || 'API request failed',
+          errorCode: response.status,
+          requestMethod: 'GET',
+        });
+        throw new Error('API request failed');
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof Error && !error.message.includes('API request failed')) {
+        trackAPIError({
+          endpoint: `/v1/jobs/${jobSetId}`,
+          errorMessage: error.message,
+          requestMethod: 'GET',
+        });
+      }
+      throw error;
     }
-    return response.json();
   }
 
   // Text-to-Image generation
@@ -80,15 +135,33 @@ class ApiService {
     batch_size?: number;
     negative_prompt?: string;
   }) {
-    const response = await fetch(`${API_BASE_URL}/v1/t2i/${model}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    });
-    if (!response.ok) {
-      throw new Error('Text-to-Image generation failed');
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/t2i/${model}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        trackAPIError({
+          endpoint: `/v1/t2i/${model}`,
+          errorMessage: errorText || 'Text-to-Image generation failed',
+          errorCode: response.status,
+          requestMethod: 'POST',
+        });
+        throw new Error('Text-to-Image generation failed');
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof Error && !error.message.includes('generation failed')) {
+        trackAPIError({
+          endpoint: `/v1/t2i/${model}`,
+          errorMessage: error.message,
+          requestMethod: 'POST',
+        });
+      }
+      throw error;
     }
-    return response.json();
   }
 
   // Text-to-Video generation
@@ -98,15 +171,33 @@ class ApiService {
     duration?: number;
     resolution?: string;
   }) {
-    const response = await fetch(`${API_BASE_URL}/v1/t2v/${model}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    });
-    if (!response.ok) {
-      throw new Error('Text-to-Video generation failed');
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/t2v/${model}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        trackAPIError({
+          endpoint: `/v1/t2v/${model}`,
+          errorMessage: errorText || 'Text-to-Video generation failed',
+          errorCode: response.status,
+          requestMethod: 'POST',
+        });
+        throw new Error('Text-to-Video generation failed');
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof Error && !error.message.includes('generation failed')) {
+        trackAPIError({
+          endpoint: `/v1/t2v/${model}`,
+          errorMessage: error.message,
+          requestMethod: 'POST',
+        });
+      }
+      throw error;
     }
-    return response.json();
   }
 
   // Image-to-Video generation
@@ -117,15 +208,33 @@ class ApiService {
     camera_control?: string;
     duration_sec?: number;
   }) {
-    const response = await fetch(`${API_BASE_URL}/v1/i2v/${model}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    });
-    if (!response.ok) {
-      throw new Error('Image-to-Video generation failed');
+    try {
+      const response = await fetch(`${API_BASE_URL}/v1/i2v/${model}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        trackAPIError({
+          endpoint: `/v1/i2v/${model}`,
+          errorMessage: errorText || 'Image-to-Video generation failed',
+          errorCode: response.status,
+          requestMethod: 'POST',
+        });
+        throw new Error('Image-to-Video generation failed');
+      }
+      return response.json();
+    } catch (error) {
+      if (error instanceof Error && !error.message.includes('generation failed')) {
+        trackAPIError({
+          endpoint: `/v1/i2v/${model}`,
+          errorMessage: error.message,
+          requestMethod: 'POST',
+        });
+      }
+      throw error;
     }
-    return response.json();
   }
 }
 

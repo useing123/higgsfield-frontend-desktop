@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +12,16 @@ import { UserGallery } from "@/components/generate/user-gallery"
 import { apiService } from "@/services/apiService"
 import { MODEL_CONFIG } from "@/lib/modelConfig"
 import { Spinner } from "@/components/ui/spinner"
+import { useAnalytics } from "@/hooks/useAnalytics"
+import {
+  trackGenerationStarted,
+  trackGenerationCompleted,
+  trackGenerationFailed,
+  trackGenerationDownloaded,
+  trackModelCategorySelected,
+  trackLayoutChanged,
+} from "@/lib/analytics/events"
+import type { GenerationType } from "@/lib/analytics/types"
 
 interface GeneratePageClientProps {
   modelCategories: string[];
@@ -27,12 +37,19 @@ interface JobState {
 
 export default function GeneratePageClient({ modelCategories, uiSchemas }: GeneratePageClientProps) {
   const searchParams = useSearchParams()
+  const { sessionId } = useAnalytics()
   const [selectedModelCategory, setSelectedModelCategory] = useState(modelCategories[0])
   const [formData, setFormData] = useState<any>({})
   const [layout, setLayout] = useState<"left" | "right" | "bottom">("left")
   const [isGenerating, setIsGenerating] = useState(false)
   const [currentJob, setCurrentJob] = useState<JobState | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Analytics tracking refs
+  const generationStartTimeRef = useRef<number>(0)
+  const pollingCountRef = useRef<number>(0)
+  const currentModelRef = useRef<string>('')
+  const currentGenerationTypeRef = useRef<GenerationType>('text_to_image')
 
   const schema = uiSchemas[selectedModelCategory]
 
@@ -60,6 +77,7 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
 
     const pollInterval = setInterval(async () => {
       try {
+        pollingCountRef.current += 1
         const jobData = await apiService.getJobStatus(currentJob.job_set_id)
         if (jobData && jobData.jobs && jobData.jobs.length > 0) {
           const mainJob = jobData.jobs[0]
@@ -75,9 +93,34 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
 
           if (newStatus === 'completed' || newStatus === 'succeeded') {
             setIsGenerating(false)
+
+            // Track generation completed
+            const duration = Date.now() - generationStartTimeRef.current
+            trackGenerationCompleted({
+              generationType: currentGenerationTypeRef.current,
+              modelName: currentModelRef.current,
+              jobSetId: currentJob.job_set_id,
+              totalDurationMs: duration,
+              pollingCount: pollingCountRef.current,
+              outputCount: 1,
+              outputUrls: newResultUrl ? [newResultUrl] : [],
+              sessionId: sessionId,
+            })
           } else if (newStatus === 'failed') {
             setIsGenerating(false)
             setError('Generation failed. Please try again.')
+
+            // Track generation failed
+            const duration = Date.now() - generationStartTimeRef.current
+            trackGenerationFailed({
+              generationType: currentGenerationTypeRef.current,
+              modelName: currentModelRef.current,
+              jobSetId: currentJob.job_set_id,
+              errorMessage: 'Generation job failed',
+              failureStage: 'processing',
+              durationBeforeFailureMs: duration,
+              sessionId: sessionId,
+            })
           }
         }
       } catch (err) {
@@ -86,7 +129,7 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
     }, 5000) // Poll every 5 seconds
 
     return () => clearInterval(pollInterval)
-  }, [currentJob])
+  }, [currentJob, sessionId])
 
   const handleFieldChange = (name: string, value: any) => {
     setFormData((prev: any) => ({ ...prev, [name]: value }))
@@ -97,15 +140,24 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
     setIsGenerating(true)
     setCurrentJob(null)
 
+    // Reset analytics tracking
+    generationStartTimeRef.current = Date.now()
+    pollingCountRef.current = 0
+
     try {
       const category = selectedModelCategory as keyof typeof MODEL_CONFIG
       const config = MODEL_CONFIG[category]
       const model = config.defaultModel
 
+      // Store for analytics
+      currentModelRef.current = model
+
       let response
+      let generationType: GenerationType
 
       // Prepare parameters based on category
       if (category === "Image to Video" || category === "Speak") {
+        generationType = 'image_to_video'
         // Handle image input
         const inputImage = formData.input_image
         if (!inputImage) {
@@ -122,8 +174,26 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
         if (formData.duration_sec) params.duration_sec = formData.duration_sec
         if (formData.audio_prompt) params.audio_prompt = formData.audio_prompt
 
+        // Store generation type for analytics
+        currentGenerationTypeRef.current = generationType
+
+        // Track generation started
+        trackGenerationStarted({
+          generationType,
+          modelName: model,
+          modelCategory: category,
+          promptLength: (formData.prompt || '').length,
+          aspectRatio: formData.aspect_ratio,
+          cameraControl: formData.camera_control,
+          duration: formData.duration_sec,
+          initiatedFrom: 'pro_mode',
+          jobSetId: '', // Will be filled after response
+          sessionId: sessionId,
+        })
+
         response = await apiService.generateImageToVideo(model, params)
       } else if (category === "Text to Video") {
+        generationType = 'text_to_video'
         const params: any = {
           prompt: formData.prompt || '',
         }
@@ -132,8 +202,26 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
         if (formData.duration) params.duration = formData.duration
         if (formData.resolution) params.resolution = formData.resolution
 
+        // Store generation type for analytics
+        currentGenerationTypeRef.current = generationType
+
+        // Track generation started
+        trackGenerationStarted({
+          generationType,
+          modelName: model,
+          modelCategory: category,
+          promptLength: (formData.prompt || '').length,
+          aspectRatio: formData.aspect_ratio,
+          duration: formData.duration,
+          resolution: formData.resolution,
+          initiatedFrom: 'pro_mode',
+          jobSetId: '',
+          sessionId: sessionId,
+        })
+
         response = await apiService.generateTextToVideo(model, params)
       } else if (category === "Text to Image") {
+        generationType = 'text_to_image'
         const params: any = {
           prompt: formData.prompt || '',
         }
@@ -141,6 +229,23 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
         if (formData.aspect_ratio) params.aspect_ratio = formData.aspect_ratio
         if (formData.batch_size) params.batch_size = formData.batch_size
         if (formData.negative_prompt) params.negative_prompt = formData.negative_prompt
+
+        // Store generation type for analytics
+        currentGenerationTypeRef.current = generationType
+
+        // Track generation started
+        trackGenerationStarted({
+          generationType,
+          modelName: model,
+          modelCategory: category,
+          promptLength: (formData.prompt || '').length,
+          hasNegativePrompt: !!formData.negative_prompt,
+          aspectRatio: formData.aspect_ratio,
+          batchSize: formData.batch_size,
+          initiatedFrom: 'pro_mode',
+          jobSetId: '',
+          sessionId: sessionId,
+        })
 
         response = await apiService.generateTextToImage(model, params)
       }
@@ -158,7 +263,34 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
       setError(err.message || 'Failed to start generation')
       setIsGenerating(false)
       console.error('Generation failed:', err)
+
+      // Track generation failure at initiation stage
+      trackGenerationFailed({
+        generationType: currentGenerationTypeRef.current,
+        modelName: currentModelRef.current,
+        jobSetId: 'failed_at_initiation',
+        errorMessage: err.message || 'Failed to start generation',
+        failureStage: 'initiation',
+        durationBeforeFailureMs: Date.now() - generationStartTimeRef.current,
+        sessionId: sessionId,
+      })
     }
+  }
+
+  const handleCategoryChange = (category: string) => {
+    trackModelCategorySelected({
+      category: category,
+      previousCategory: selectedModelCategory,
+    })
+    setSelectedModelCategory(category)
+  }
+
+  const handleLayoutChange = (newLayout: "left" | "right" | "bottom") => {
+    trackLayoutChanged({
+      fromLayout: layout,
+      toLayout: newLayout,
+    })
+    setLayout(newLayout)
   }
 
   const handleDownload = async () => {
@@ -176,6 +308,15 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
       a.click()
       document.body.removeChild(a)
       window.URL.revokeObjectURL(url)
+
+      // Track download
+      trackGenerationDownloaded({
+        generationType: currentGenerationTypeRef.current,
+        modelName: currentModelRef.current,
+        jobSetId: currentJob.job_set_id,
+        fileType: isVideo ? 'video' : 'image',
+        outputIndex: 0,
+      })
     } catch (err) {
       console.error('Download failed:', err)
     }
@@ -191,7 +332,7 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
               {modelCategories.map((category) => (
                 <button
                   key={category}
-                  onClick={() => setSelectedModelCategory(category)}
+                  onClick={() => handleCategoryChange(category)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                     selectedModelCategory === category
                       ? "bg-white/10 text-white"
@@ -205,9 +346,9 @@ export default function GeneratePageClient({ modelCategories, uiSchemas }: Gener
 
             <div className="flex justify-end mb-4">
               <div className="flex items-center gap-2 p-1 bg-zinc-900 rounded-lg">
-                <Button variant={layout === 'left' ? 'secondary' : 'ghost'} size="icon" onClick={() => setLayout('left')}><PanelLeft className="w-5 h-5" /></Button>
-                <Button variant={layout === 'right' ? 'secondary' : 'ghost'} size="icon" onClick={() => setLayout('right')}><PanelRight className="w-5 h-5" /></Button>
-                <Button variant={layout === 'bottom' ? 'secondary' : 'ghost'} size="icon" onClick={() => setLayout('bottom')}><PanelBottom className="w-5 h-5" /></Button>
+                <Button variant={layout === 'left' ? 'secondary' : 'ghost'} size="icon" onClick={() => handleLayoutChange('left')}><PanelLeft className="w-5 h-5" /></Button>
+                <Button variant={layout === 'right' ? 'secondary' : 'ghost'} size="icon" onClick={() => handleLayoutChange('right')}><PanelRight className="w-5 h-5" /></Button>
+                <Button variant={layout === 'bottom' ? 'secondary' : 'ghost'} size="icon" onClick={() => handleLayoutChange('bottom')}><PanelBottom className="w-5 h-5" /></Button>
               </div>
             </div>
 

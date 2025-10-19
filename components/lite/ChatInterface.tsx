@@ -6,6 +6,8 @@ import { Message as MessageType } from '@/lib/types';
 import { apiService } from '@/services/apiService';
 import MessageList from './chat/MessageList';
 import ChatInput from './chat/ChatInput';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { trackChatMessageSent, trackChatResponseReceived, trackFeatureCardClicked } from '@/lib/analytics/events';
 
 const featureCards = [
     {
@@ -32,6 +34,7 @@ const featureCards = [
 
 const ChatInterface = () => {
   const searchParams = useSearchParams();
+  const { sessionId } = useAnalytics();
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +42,7 @@ const ChatInterface = () => {
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
   const [useStreaming] = useState(false); // Toggle to enable/disable streaming
   const hasAutoSubmittedRef = useRef(false);
+  const messageStartTimeRef = useRef<number>(0);
 
   const mockUploadImage = async (file: File): Promise<string> => {
     return new Promise((resolve) => {
@@ -80,6 +84,9 @@ const ChatInterface = () => {
     const content = messageContent || input;
     if (!content.trim() && !imageUrl) return;
 
+    // Prevent duplicate sends if already loading
+    if (isLoading) return;
+
     const conversationHistory = [...messages];
 
     let combinedContent = content;
@@ -95,6 +102,18 @@ const ChatInterface = () => {
 
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
+
+    // Track message sent
+    trackChatMessageSent({
+      messageLength: content.length,
+      hasImage: !!imageUrl,
+      conversationLength: messages.length,
+      sessionId: sessionId,
+      suggestionUsed: false,
+    });
+
+    // Store start time for response time tracking
+    messageStartTimeRef.current = Date.now();
 
     if (!messageContent) {
       setInput('');
@@ -163,6 +182,15 @@ const ChatInterface = () => {
             job_details: responseData.job_details,
           };
           setMessages((prevMessages) => [...prevMessages, assistantMessage]);
+
+          // Track response received
+          const responseTime = Date.now() - messageStartTimeRef.current;
+          trackChatResponseReceived({
+            responseTimeMs: responseTime,
+            responseLength: responseData.message.length,
+            hasJobDetails: !!responseData.job_details,
+            sessionId: sessionId,
+          });
         }
         setIsLoading(false);
       }
@@ -179,7 +207,15 @@ const ChatInterface = () => {
     }
   };
 
-  const handleFeatureCardClick = (message: string) => {
+  const handleFeatureCardClick = (message: string, cardIndex: number) => {
+    const cardTypes = ['video_prompt', 'brainstorm', 'script', 'character'] as const;
+
+    trackFeatureCardClicked({
+      cardType: cardTypes[cardIndex],
+      cardPosition: cardIndex,
+      sessionId: sessionId,
+    });
+
     sendMessage(message);
   };
 
@@ -202,7 +238,7 @@ const ChatInterface = () => {
                 {featureCards.map((card, index) => (
                   <button
                     key={card.title}
-                    onClick={() => handleFeatureCardClick(card.message)}
+                    onClick={() => handleFeatureCardClick(card.message, index)}
                     style={{ animationDelay: `${index * 100}ms` }}
                     className="group relative bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl p-6 text-left transition-all duration-300 hover:bg-zinc-800/80 hover:border-lime-500/50 hover:scale-105 hover:shadow-xl hover:shadow-lime-500/10 active:scale-100 animate-in fade-in slide-in-from-bottom-8"
                   >
