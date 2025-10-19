@@ -7,9 +7,10 @@ interface MessageListProps {
   messages: MessageType[];
   isLoading: boolean;
   streamingMessageId?: string | null;
+  loadingMessage?: string;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, streamingMessageId }) => {
+const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, streamingMessageId, loadingMessage }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,7 +40,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, streamin
         ))}
         {isLoading && (
           <div className="flex justify-start animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <TypingIndicator />
+            <TypingIndicator loadingMessage={loadingMessage} />
           </div>
         )}
       </div>

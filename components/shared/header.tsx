@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Sparkles, Zap } from "lucide-react"
 
 export function Header() {
   return (
@@ -12,34 +11,20 @@ export function Header() {
             <span className="text-body-m font-grotesk font-bold">Higgsfield</span>
           </Link>
           <nav className="hidden md:flex items-center gap-3">
-            <Link
-              href="/generate"
-              className="relative group"
-            >
+            <Link href="/generate">
               <Button
-                variant="outline"
                 size="sm"
-                className="gap-2 bg-gradient-to-r from-violet-500/10 to-purple-500/10 border-violet-500/50 hover:border-violet-500 hover:bg-violet-500/20 transition-all"
+                className="font-semibold bg-white text-black border border-border hover:!bg-gray-100 hover:!text-black transition-all"
               >
-                <Sparkles className="w-4 h-4 text-violet-500" />
-                <span className="font-semibold bg-gradient-to-r from-violet-500 to-purple-500 bg-clip-text text-transparent">
-                  Pro Mode
-                </span>
+                Pro Mode
               </Button>
             </Link>
-            <Link
-              href="/"
-              className="relative group"
-            >
+            <Link href="/">
               <Button
-                variant="outline"
                 size="sm"
-                className="gap-2 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-blue-500/50 hover:border-blue-500 hover:bg-blue-500/20 transition-all"
+                className="font-semibold bg-primary text-primary-foreground hover:bg-black hover:text-white transition-all"
               >
-                <Zap className="w-4 h-4 text-blue-500" />
-                <span className="font-semibold bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
-                  Lite Mode
-                </span>
+                Lite Mode
               </Button>
             </Link>
             <Link

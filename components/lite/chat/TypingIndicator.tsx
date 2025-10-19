@@ -1,7 +1,11 @@
 import React from 'react';
 import { Bot } from 'lucide-react';
 
-const TypingIndicator = () => {
+interface TypingIndicatorProps {
+  loadingMessage?: string;
+}
+
+const TypingIndicator = ({ loadingMessage }: TypingIndicatorProps) => {
   return (
     <div className="flex gap-3 mb-6">
       {/* Avatar */}
@@ -11,11 +15,17 @@ const TypingIndicator = () => {
 
       {/* Typing bubble */}
       <div className="bg-zinc-800/80 px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-lime-500 animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-2 h-2 rounded-full bg-lime-500 animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-2 h-2 rounded-full bg-lime-500 animate-bounce"></div>
-        </div>
+        {loadingMessage ? (
+          <p className="text-sm text-zinc-400 italic animate-pulse">
+            {loadingMessage}
+          </p>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-lime-500 animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-2 h-2 rounded-full bg-lime-500 animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-2 h-2 rounded-full bg-lime-500 animate-bounce"></div>
+          </div>
+        )}
       </div>
     </div>
   );

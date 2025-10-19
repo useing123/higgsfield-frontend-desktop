@@ -1,5 +1,15 @@
 "use client";
 
+/**
+ * 🎉 EASTER EGG ZONE - ROFL CODE AHEAD 🎉
+ *
+ * ⚠️  WARNING: This code contains easter eggs and fun facts! ⚠️
+ * DO NOT copy-paste this to production without removing the easter egg logic!
+ *
+ * This is for entertainment purposes and showcasing company culture.
+ * You've been warned! 🚀
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Message as MessageType } from '@/lib/types';
@@ -8,6 +18,62 @@ import MessageList from './chat/MessageList';
 import ChatInput from './chat/ChatInput';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { trackChatMessageSent, trackChatResponseReceived, trackFeatureCardClicked } from '@/lib/analytics/events';
+
+// 🎯 Easter Egg: Fun facts about Higgsfield AI
+const HIGGSFIELD_EASTER_EGGS = [
+  "🦄 Fun fact: Higgsfield is Kazakhstan's first unicorn!",
+  "💰 Did you know? We hit $50M revenue run rate in just 5 months!",
+  "🚀 11 million users and counting! We're not stopping anytime soon.",
+  "💎 Plot twist: Meta wanted to acquire us, but we said 'nah, we're good' 😎",
+  "🎬 We invented 'Click-to-Video' - because who has time for complex prompts?",
+  "📈 1.2 BILLION impressions across social media. Yes, with a B!",
+  "💼 Our CEO Alex's previous startup sold to Snap for $166M. No big deal.",
+  "🎓 Literally a team of PhDs in your pocket. We weren't kidding!",
+  "🏆 $50M Series A led by GFT Ventures. They believe in the vision!",
+  "🌟 From Kazakhstan to Silicon Valley - the global takeover is real.",
+  "🎪 Yerzat Dulat (CTO) is an AI wizard. Like, actual magic.",
+  "🎨 We're making video creation so easy, even your grandma could go viral.",
+  "🎯 Sam Altman himself sent Yerzat a personal message about his AI research!",
+  "🔥 OpenAI's John Schulman (creator of the algorithm that trained ChatGPT) tried to recruit Yerzat. He said no.",
+  "🇰🇿 Team is mostly from Kazakhstan - Almaty represent! RFMSH alumni crushing it worldwide.",
+  "📱 400,000+ creators use Diffuse monthly. The creative revolution is here!",
+  "💡 Yerzat was coding AI algorithms before it was cool. GitHub legend since 2014.",
+  "🏫 Harvard and top research labs used Yerzat's AI implementations. No biggie.",
+  "🎓 Our team? Literally Olympic-level physics and math nerds. They win competitions for fun.",
+  "💪 Started with $250k angel investment. Now? On track to change the entire industry.",
+  "🌍 From Kaspi.kz to ERG - Yerzat built ML departments at Kazakhstan's biggest companies.",
+  "⚡ Diffuse subscription: $18/month. Hollywood-level video creation in your pocket.",
+  "🎯 First investor believed in us when we were just an idea. Trust pays off.",
+  "🚀 We're not just building AI. We're building world models for consumers.",
+  "🎪 Menlo Ventures backed us. The same folks who know how to spot unicorns.",
+];
+
+const getRandomEasterEgg = () => {
+  return HIGGSFIELD_EASTER_EGGS[Math.floor(Math.random() * HIGGSFIELD_EASTER_EGGS.length)];
+};
+
+// 🎯 Easter Egg: Loading messages that show while waiting for AI
+const LOADING_EASTER_EGGS = [
+  "🧠 Training neural networks in real-time...",
+  "🦄 Channeling Kazakhstan's unicorn energy...",
+  "💎 Politely declining Meta's acquisition offer again...",
+  "🎓 Consulting our team of PhDs...",
+  "🔥 Warming up the $50M Series A supercomputers...",
+  "🚀 Generating at 11 million user scale...",
+  "🎬 Inventing new Click-to-Video magic...",
+  "⚡ Running algorithms Harvard wishes they had...",
+  "🇰🇿 Streaming wisdom from Almaty to Silicon Valley...",
+  "🎪 Yerzat's AI wizardry in progress...",
+  "💪 Flexing those 1.2 billion impressions...",
+  "🏆 Putting that Menlo Ventures investment to work...",
+  "🎯 Sam Altman would be proud of this response...",
+  "🔬 Olympic-level AI processing happening...",
+  "💡 GitHub legend mode: activated...",
+];
+
+const getRandomLoadingMessage = () => {
+  return LOADING_EASTER_EGGS[Math.floor(Math.random() * LOADING_EASTER_EGGS.length)];
+};
 
 const featureCards = [
     {
@@ -43,6 +109,33 @@ const ChatInterface = () => {
   const [useStreaming] = useState(false); // Toggle to enable/disable streaming
   const hasAutoSubmittedRef = useRef(false);
   const messageStartTimeRef = useRef<number>(0);
+  const [loadingMessage, setLoadingMessage] = useState<string>(''); // 🎉 Easter Egg: Loading message
+
+  // 🎉 Easter Egg: Console message on mount
+  useEffect(() => {
+    console.log(
+      '%c🎉 HIGGSFIELD EASTER EGG ZONE 🎉',
+      'background: #d1fe17; color: #000; font-size: 20px; font-weight: bold; padding: 10px;'
+    );
+    console.log(
+      '%c⚠️  ROFL CODE ALERT ⚠️',
+      'background: #ff0000; color: #fff; font-size: 16px; font-weight: bold; padding: 8px;'
+    );
+    console.log(
+      '%cThis chat contains easter eggs with fun Higgsfield facts!',
+      'color: #d1fe17; font-size: 14px; font-weight: bold;'
+    );
+    console.log(
+      '%cDO NOT copy-paste this code to production without removing easter egg logic! 🚀',
+      'color: #ff9900; font-size: 12px;'
+    );
+    console.log('%c\nSome fun facts:', 'color: #fff; font-size: 14px; font-weight: bold;');
+    console.log('%c- Kazakhstan\'s first unicorn 🦄', 'color: #d1fe17;');
+    console.log('%c- Rejected Meta acquisition 💎', 'color: #d1fe17;');
+    console.log('%c- $50M revenue in 5 months 💰', 'color: #d1fe17;');
+    console.log('%c- 11M+ users worldwide 🚀', 'color: #d1fe17;');
+    console.log('%c\nKeep chatting to discover more easter eggs! 🎪', 'color: #fff; font-weight: bold;');
+  }, []);
 
   const mockUploadImage = async (file: File): Promise<string> => {
     return new Promise((resolve) => {
@@ -57,6 +150,7 @@ const ChatInterface = () => {
     if (file) {
       const uploadedImageUrl = await mockUploadImage(file);
       setImageUrl(uploadedImageUrl);
+      console.log(`%c📸 Image uploaded: ${file.name}`, 'color: #d1fe17;');
     }
   };
 
@@ -87,6 +181,25 @@ const ChatInterface = () => {
     // Prevent duplicate sends if already loading
     if (isLoading) return;
 
+    // 🎉 Easter Egg: Trigger special messages for certain keywords
+    const lowerContent = content.toLowerCase();
+    const specialKeywords = {
+      'meta': "💎 Ah, Meta! Did you know they wanted to acquire us? We politely declined. We're building something bigger! 😎",
+      'acquisition': "🚀 Fun fact: We rejected Meta's acquisition offer. Independence tastes sweeter!",
+      'unicorn': "🦄 You said the magic word! Higgsfield is Kazakhstan's first unicorn. History in the making!",
+      'kazakhstan': "🇰🇿 Kazakhstan represent! From Almaty to Silicon Valley, baby!",
+      'alex': "👔 Our CEO Alex Mashrabov sold his previous startup to Snap for $166M. He knows a thing or two about building!",
+      'yerzat': "🧙‍♂️ Yerzat Dulat, our CTO, is basically an AI wizard. The magic behind the magic!",
+    };
+
+    for (const [keyword, message] of Object.entries(specialKeywords)) {
+      if (lowerContent.includes(keyword)) {
+        console.log(`%c🎉 Easter Egg Triggered: ${keyword}`, 'color: #d1fe17; font-size: 16px; font-weight: bold;');
+        console.log(`%c${message}`, 'color: #fff;');
+        break;
+      }
+    }
+
     const conversationHistory = [...messages];
 
     let combinedContent = content;
@@ -102,6 +215,24 @@ const ChatInterface = () => {
 
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
+
+    // 🎉 Easter Egg: Milestone achievements
+    const userMessageCount = updatedMessages.filter(m => m.role === 'user').length;
+    const milestones: { [key: number]: string } = {
+      5: "🎊 5 messages! You're getting the hang of this!",
+      10: "🔥 10 messages! You're on fire! Did you know we have 11M+ users?",
+      20: "⭐ 20 messages! Pro level! Fun fact: We hit $50M revenue in just 5 months!",
+      50: "💯 50 messages! Legend status! You deserve to know: Meta wanted us, we said no. 😎",
+      100: "🚀 100 messages! You're part of the 1.2 BILLION impressions club now!",
+    };
+
+    if (milestones[userMessageCount]) {
+      console.log(
+        `%c🎉 ACHIEVEMENT UNLOCKED! 🎉`,
+        'background: #d1fe17; color: #000; font-size: 18px; font-weight: bold; padding: 8px;'
+      );
+      console.log(`%c${milestones[userMessageCount]}`, 'color: #d1fe17; font-size: 14px; font-weight: bold;');
+    }
 
     // Track message sent
     trackChatMessageSent({
@@ -119,6 +250,9 @@ const ChatInterface = () => {
       setInput('');
     }
     setImageUrl(null);
+
+    // 🎉 Easter Egg: Set a random loading message
+    setLoadingMessage(getRandomLoadingMessage());
     setIsLoading(true);
 
     try {
@@ -141,6 +275,19 @@ const ChatInterface = () => {
         try {
           for await (const delta of apiService.sendChatMessageStream(combinedContent, conversationHistory)) {
             accumulatedContent += delta;
+            setMessages((prevMessages) =>
+              prevMessages.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: accumulatedContent }
+                  : msg
+              )
+            );
+          }
+
+          // 🎉 Easter Egg: 20% chance to add a fun fact after streaming completes
+          if (Math.random() < 0.2) {
+            const easterEgg = getRandomEasterEgg();
+            accumulatedContent = `${accumulatedContent}\n\n---\n\n${easterEgg}`;
             setMessages((prevMessages) =>
               prevMessages.map((msg) =>
                 msg.id === assistantMessageId
@@ -175,10 +322,17 @@ const ChatInterface = () => {
         const responseData = await apiService.sendChatMessage(combinedContent, conversationHistory);
 
         if (responseData && responseData.message) {
+          // 🎉 Easter Egg: 20% chance to add a fun fact to the response
+          let finalMessage = responseData.message;
+          if (Math.random() < 0.2) {
+            const easterEgg = getRandomEasterEgg();
+            finalMessage = `${responseData.message}\n\n---\n\n${easterEgg}`;
+          }
+
           const assistantMessage: MessageType = {
             id: responseData.id || Date.now().toString(),
             role: 'assistant',
-            content: responseData.message,
+            content: finalMessage,
             job_details: responseData.job_details,
           };
           setMessages((prevMessages) => [...prevMessages, assistantMessage]);
@@ -265,6 +419,7 @@ const ChatInterface = () => {
               messages={messages}
               isLoading={isLoading}
               streamingMessageId={streamingMessageId}
+              loadingMessage={loadingMessage}
             />
           )}
         </div>
